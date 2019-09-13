@@ -10,7 +10,7 @@ class Tabel:
         self.space = " "*space_num
 
         if isinstance(xfile,str):
-            excel = xlrd.open_workbook("test.xlsx")
+            excel = xlrd.open_workbook(xfile)
             if isinstance(sheet_flag,int):
                 self.sheet = excel.sheet_by_index(sheet_flag)  # Open the first tab
             elif isinstance(sheet_flag,str):
@@ -32,6 +32,7 @@ class Tabel:
         self._initial_var()
 
 
+
     def _initial_var(self):
         self.params.setdefault("center",True) # 中心
         self.params.setdefault("fill",True) # 全满
@@ -45,6 +46,11 @@ class Tabel:
             for j in range(self.sheet.ncols):
                 col_max_lens[j] = max(col_max_lens[j],len(self.cell(i,j)))
         self.col_max_lens = col_max_lens
+
+        merge_col = []
+        for mc in self.merge_cells:
+            merge_col.append([mc[0],mc[1]-1,mc[2],mc[3]-1])
+        self.merge_col = merge_col
 
     def in_merge_cell(self,i,j):
         for index,mc in enumerate(self.merge_cells):
@@ -92,13 +98,16 @@ class Tabel:
         res = []
         for r in all_range:
             if extract[0]>r[0] and extract[1]<r[1]:
-                res.append([r[0],extract[0]])
-                res.append([extract[1],r[1]])
+                res.append([r[0],extract[0]-1])
+                res.append([extract[1]+1,r[1]])
             elif extract[0] == r[0] and extract[1]<r[1]:
-                res.append([extract[1],r[1]])
-            else:
-                res.append(r)
+                res.append([extract[1]+1,r[1]])
+            elif extract[1]==r[1] and extract[0]>r[0]:
+                res.append([r[0],extract[0]-1])
         return res
+
+    def _cacu_multicol_align(self,j):
+        return '|c|' if j == 0 else "c|"
 
     def to_tex(self):
 
@@ -120,11 +129,11 @@ class Tabel:
                         if cres:
                             if rres:
                                 line.append(MultiColumn(cnum,
-                                                        align='c|',
+                                                        align=self._cacu_multicol_align(j),
                                                         data=MultiRow(rnum,data=self.cell(i,j))))
                             else:
                                 line.append(MultiColumn(cnum,
-                                                        align='c|',
+                                                        align=self._cacu_multicol_align(j),
                                                         data=self.cell(i,j)))
                         else:
                             line.append(MultiRow(rnum,
@@ -132,7 +141,7 @@ class Tabel:
                     elif res == 1: # 不同行同列
                         if cres and rres:
                             line.append(MultiColumn(cnum,
-                                                    align="c|",
+                                                    align=self._cacu_multicol_align(j),
                                                     data=""))
                         else:
                             line.append("")
@@ -141,17 +150,18 @@ class Tabel:
 
             tab.add_row(line)
 
-            all_range = [[0,self.sheet.ncols]]
+            all_range = [[0,self.sheet.ncols-1]]
             for mi in merge_set:
-                merge_range = self.sheet.merged_cells[mi]
-                if merge_range[1]-merge_range[0]>1 and merge_range[1]-i>1:
+                merge_range = self.merge_col[mi]
+
+                if merge_range[1]-merge_range[0]>0 and merge_range[1]-i>0:
                     all_range = self._extract_range(all_range,merge_range[2:4])
 
-            if all_range[0][0] == 0 and all_range[0][1] == self.sheet.ncols:
+            if all_range[0][0] == 0 and all_range[0][1] == self.sheet.ncols-1:
                 tab.add_hline()
             else:
                 for r in all_range:
-                    tab.add_hline(r[0]+1,r[1])
+                    tab.add_hline(r[0]+1,r[1]+1)
 
         table = TexTable(position=self.params["position"])
         table.append(tab)
@@ -191,3 +201,6 @@ class Tabel:
         res = re.sub(re_cline,lambda x:x.group(1).replace(" ","").replace("\n",""),res)
         return res
 
+    def print_need(self):
+        print(r"\usepackage{multirow}")
+        print(r"\newlength\tablewidth")
