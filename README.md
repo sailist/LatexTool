@@ -2,12 +2,13 @@
 生成表格，绘制公式...等一系列工具（还未更新）
 
 
-## 生成表格
-
 ```bash
-pip install x2t
+pip install textool
 ```
-use directly in clt
+
+## Generate Table Perfectly
+
+use directly in command line
 ```bash
 x2t file.xlsx -f -c
 ```
@@ -20,3 +21,25 @@ print(tab.to_tex())
 ```
 
 where fill is strech table to \textwidth, and center is use \centering
+
+## Quick Paste Figure
+
+```bash
+pst filename
+```
+
+Then the file will be saved as ./filename.png, and the filename will be copied in clipboard.
+
+
+```bash
+pst filename -f
+```
+Then the content of clipboard will be:
+```bash
+\begin{figure}[H]
+   \centering
+   \includegraphics[width=0.8\textwidth]{filename.png}
+   \caption{filename}
+   \label{fig:filename}
+\end{figure}
+```

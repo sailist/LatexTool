@@ -1,8 +1,8 @@
 from setuptools import setup,find_packages
 
 setup(
-    name='x2t',
-    version='0.0.1.dev1',
+    name='textool',
+    version='0.0.7.1.dev1',
     description="convert xls table to tex code",
     url='https://github.com/sailist/LatexTool',
     author='sailist',
@@ -25,7 +25,8 @@ setup(
     packages=find_packages(),
     entry_points={
         'console_scripts':[
-            'x2t = LatexTool.totable:main'
+            'x2t = LatexTool.totable:main',
+            'pst = LatexTool.paste:main'
         ]
       },
 )
