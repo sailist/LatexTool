@@ -1,7 +1,6 @@
 # LatexTool
 生成表格，绘制公式...等一系列工具（还未更新）
 
-
 ```bash
 pip install textool
 ```

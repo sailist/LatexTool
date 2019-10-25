@@ -1,8 +1,8 @@
 from setuptools import setup,find_packages
 
 setup(
-    name='textool',
-    version='0.0.7.1.dev1',
+    name='textools',
+    version='0.0.7.3.dev1',
     description="convert xls table to tex code",
     url='https://github.com/sailist/LatexTool',
     author='sailist',
