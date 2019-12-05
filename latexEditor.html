@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MathJax v3 with interactive TeX and MathML input and SVG output</title>
+  <style>
+    #input{
+      box-sizing: border-box;
+      height: 100px;
+      resize: vertical;
+    }
+    .ahist{
+      /*border: 1px solid gray;*/
+      box-sizing: border-box;
+      margin-bottom: 5px;
+    }
+    .fbt {
+      margin-right :2px;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+    .histipt{
+      text-align : center;
+    }
+    #frame{
+      width: 80%;
+      min-height:100%;
+      /*text-align: center;*/
+      margin:0 auto;
+      /*overflow: auto;*/
+    }
+    html, body{
+      height: 100%;
+    }
+    .interact{
+      position: absolute;
+      top: 25%;
+      right: 1%;
+    }
+    .footer {
+      background-color: #000;
+      position: relative;
+      /*height: 100px;*/
+      color: aliceblue;
+      text-align: center;
+      float: bottom;
+      padding: 10px;
+      /*margin-top: -100px;*/
+      /*clear: both;*/
+    }
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
+  <script type="text/javascript">
+    function copy(filed) {
+      // var clipBoardContent= filed.innerText;
+      window.getSelection().selectAllChildren(filed);
+      document.execCommand("Copy");
+    }
+  </script>
+
+  <script>
+    function clear_history() {
+      var history = document.getElementById("history");
+      history.innerHTML = "";
+    }
+    function remove_chs(text) {
+      return text.replace("）","\)")
+              .replace("（","\(");
+
+    }
+
+    function add_history() {
+      var inputarea = document.getElementById("input");
+      let input = inputarea.value;
+
+      var warnp = document.getElementById("warn");
+      if(input.length === 0){
+        warnp.innerText = "空文本!";
+        return;
+      }else{
+        warnp.innerText = ""
+      }
+
+      var output = document.getElementById("output").innerHTML;
+
+      var history = document.getElementById("history");
+
+      let ahist = document.createElement("ul");
+      ahist.className = "ahist list-group";
+      let wrap = document.createElement("div");
+      // wrap.className = "row";
+      ahist.appendChild(wrap);
+
+      // ahist.innerHTML = templete;
+
+      let show = document.createElement("li");
+      show.className = "show list-group-item";
+
+      let ipt = document.createElement("li");
+      ipt.className = "histipt list-group-item";
+      ipt.innerText = input;
+
+      let opt = document.createElement("li");
+      opt.className = "histipt list-group-item";
+      opt.innerHTML = output;
+
+      ahist.appendChild(ipt);
+      // .appendChild(document.createElement("hr"));
+      ahist.appendChild(opt);
+
+      function create_interact(ipt){
+        let interact = document.createElement("div");
+        interact.style = "float: right;display:inline-block;";
+        interact.className = "interact";
+        {
+          let btgroup = document.createElement("div");
+          btgroup.className="btn-group interactbtgroup";
+          {
+            let copybt = document.createElement("button");copybt.className = "btn btn-default";
+            copybt.innerText = "复制";
+            copybt.onclick = ()=>{
+              copy(ipt);
+            };
+
+            let insertbt = document.createElement("button");insertbt.className = "btn btn-default";
+            insertbt.innerText = "插入";
+            insertbt.onclick = ()=>{
+              insertAtCursor(inputarea,input);
+            };
+
+            let delbt = document.createElement("button");delbt.className = "btn btn-danger";
+            delbt.innerText = "删除";
+            delbt.onclick =()=>{
+              history.removeChild(ahist);
+            };
+            btgroup.appendChild(copybt);
+            btgroup.appendChild(insertbt);
+            btgroup.appendChild(delbt);
+          }
+          interact.appendChild(btgroup);
+        }
+        return interact;
+      }
+      // wrap.appendChild(show);
+      opt.appendChild(create_interact(ipt));
+
+      history.appendChild(ahist);
+
+
+    }
+
+  </script>
+  <script>
+    function convert() {
+      //从input中获取内容，然后放入output，然后执行MathJax转换命令
+      var iptarea = document.getElementById("input");
+      var input = iptarea.value;
+
+      //去掉中文字符
+      input = remove_chs(input);
+      iptarea.innerHTML = input;
+      iptarea.value = input;
+
+
+      output = document.getElementById('output');
+      output.innerHTML = `$$\\begin{align}${input}\\end{align}$$`;
+
+      MathJax.texReset();
+      MathJax.typesetClear();
+      MathJax.typesetPromise()
+              .catch(function (err) {
+                //
+                //  If there was an internal error, put the message into the output instead
+                //
+                output.innerHTML = '';
+                output.appendChild(document.createElement('pre')).appendChild(document.createTextNode(err.message));
+              });
+    }
+  </script>
+  <script>
+    <!--设置光标位置    -->
+    function offsetCursorPosition(elem, index) {
+      if(index>0){
+        return;
+      }
+
+      var val = elem.value;
+      var len = val.length;
+
+      // 超过文本长度直接返回
+      if (len < index) return;
+      setTimeout(function() {
+        elem.focus();
+        if (elem.setSelectionRange) { // 标准浏览器
+          elem.setSelectionRange(elem.selectionStart+index, elem.selectionStart+index);
+        } else { // IE9-
+          var range = elem.createTextRange();
+          range.moveStart("character", -len);
+          range.moveEnd("character", -len);
+          range.moveStart("character", elem.selectionStart+index);
+          range.moveEnd("character", 0);
+          range.select();
+        }
+      }, 10)
+    }
+
+    //在光标处插入文本
+    function insertAtCursor(myField, myValue) {
+      //IE support
+      if (document.selection) {
+        document.selection.empty();
+        caretPos.text = myValue;
+        caretPos.select();
+        myField.focus();
+      }
+      //MOZILLA/NETSCAPE support
+      else if (myField.selectionStart || myField.selectionStart == '0') {
+        var startPos = myField.selectionStart;
+        var endPos = myField.selectionEnd;
+        // save scrollTop before insert
+        var restoreTop = myField.scrollTop;
+        myField.value = myField.value.substring(0, startPos) + myValue + myField.value.substring(endPos, myField.value.length);
+        if (restoreTop > 0) {
+          myField.scrollTop = restoreTop;
+        }
+        myField.focus();
+        myField.selectionStart = startPos + myValue.length;
+        myField.selectionEnd = startPos + myValue.length;
+      } else {
+        myField.value += myValue;
+        myField.focus();
+      }
+
+      convert();
+    }
+    var caretPos ;
+    function setPos(){
+      if (document.selection) { //IE
+        caretPos =  document.selection.createRange();
+      }
+    }
+  </script>
+
+  <script>
+    <!--公式按钮初始化-->
+    let formular = [
+      {
+        "group":false,
+        "title":"LaTeX",
+        "content":"$\\LaTeX$",
+        "value":"\\LaTeX",
+        "curser":0,
+      },
+      {
+        "group":true,
+        "title":"上标",
+        "content":"$x^{a}$",
+        "value":"^{}",
+        "curser":-1,
+        "childs":[
+          {
+            "group":false,
+            "title":"下标",
+            "content":"$x_{a}$",
+            "value":"_{}",
+            "curser":-1,
+          },
+          {
+            "group":false,
+            "title":"上下标",
+            "content":"$x_{b}^{a}$",
+            "value":"_{}^{}",
+            "curser":-4,
+          },
+        ]
+      },
+      {
+        "group":false,
+        "title":"分数",
+        "content":"$\\frac{a}{b}$",
+        "value":"\\frac{}{}",
+        "curser":-3,
+      },
+      {
+        "group":true,
+        "title":"积分",
+        "content":"$\\int$",
+        "value":"\\int ",
+        "curser":0,
+        "childs":[
+          {
+            "group":false,
+            "title":"积分+上下标",
+            "content":"$\\int_{b}^{a}$",
+            "value":"\\int_{}^{}",
+            "curser":-4,
+          },
+          {
+            "group":false,
+            "title":"闭曲线积分",
+            "content":"$\\oint$",
+            "value":"\\oint ",
+            "curser":0,
+          },
+          {
+            "group":false,
+            "title":"闭曲线积分+上下标",
+            "content":"$\\oint_{b}^{a}$",
+            "value":"\\oint_{}^{}",
+            "curser":-4,
+          },
+          {
+            "group":false,
+            "title":"二重积分",
+            "content":"$\\iint_{b}^{a}$",
+            "value":"\\iint_{}^{}",
+            "curser":-4,
+          },
+          {
+            "group":false,
+            "title":"三重积分",
+            "content":"$\\iiint_{b}^{a}$",
+            "value":"\\int_{}^{}",
+            "curser":-4,
+          },
+        ]
+      },
+      {
+        "group":true,
+        "title":"小括号",
+        "content":"$\\left( \\right)$",
+        "value":"\\left(  \\right)",
+        "curser":-8,
+        "childs":[
+          {
+            "group":false,
+            "title":"大括号",
+            "content":"$\\left\\{ \\right\\}$",
+            "value":"\\left\\{  \\right\\}",
+            "curser":-9,
+          },
+          {
+            "group":false,
+            "title":"中括号",
+            "content":"$\\left[\\quad{}\\right]$",
+            "value":"\\left[  \\right]",
+            "curser":-8,
+          },
+          {
+            "group":false,
+            "title":"双线括号",
+            "content":"$\\left\\| \\right\\|$",
+            "value":"\\left\\|  \\right\\|",
+            "curser":-9,
+          },
+          {
+            "group":false,
+            "title":"左括号",
+            "content":"$\\left( \\right.$",
+            "value":"\\left(  \\right.",
+            "curser":-8,
+          },
+          {
+            "group":false,
+            "title":"右括号",
+            "content":"$\\quad\\left. \\right)$",
+            "value":"\\left.  \\right)",
+            "curser":-8,
+          },
+        ],
+      },
+      {
+        "group":true,
+        "title":"交",
+        "content":"$\\bigcap$",
+        "value":"\\bigcap ",
+        "curser":0,
+        "childs":[
+
+        ]
+      },
+      {
+        "group":true,
+        "title":"求和",
+        "content":"$\\sum$",
+        "value":"\\sum ",
+        "curser":0,
+        "childs":[
+
+        ]
+      },
+      {
+        "group":true,
+        "title":"乘积",
+        "content":"$\\prod$",
+        "value":"\\prod ",
+        "curser":0,
+        "childs":[
+
+        ]
+      },
+      {
+        "group":true,
+        "title":"希腊字母Alpha",
+        "content":"$\\alpha$",
+        "value":"\\alpha ",
+        "curser":0,
+        "childs":[
+
+        ]
+      },
+      {
+        "group":true,
+        "title":"大于",
+        "content":"$>$",
+        "value":"> ",
+        "curser":0,
+        "childs":[
+
+        ]
+      },
+      {
+        "type":"br"
+      },
+      {
+        "group":true,
+        "title":"大于",
+        "content":"$\\begin{matrix}.&.&. \\\\.& . & .\\end{matrix}$",
+        "value":"\\begin{matrix}\n&  & \\\\\n&  & \\\\\n&  &\n\\end{matrix}",
+        "curser":0,
+        "childs":[
+
+        ]
+      },
+      {
+        "group":true,
+        "title":"大于",
+        "content":"$\\binom{r}{n}$",
+        "value":"\\binom{}{}",
+        "curser":-3,
+        "childs":[
+
+        ]
+      },
+
+
+
+    ];
+
+    function on_formulatbt_click(value) {
+      var ipt = document.getElementById("input");
+      insertAtCursor(ipt,value["value"]);
+      offsetCursorPosition(ipt,value["curser"]);
+      ipt.focus();
+    }
+
+    function init_button() {
+      //初始化按钮，在页面加载完成后执行
+      formular.forEach((value,index)=>{
+        var btarea = document.getElementById("btarea");
+        if(value["type"]){
+          btarea.appendChild(document.createElement("br"));
+          return;
+        }
+
+        if(value["group"]){
+          dropdownwrap = document.createElement("div");
+          dropdownwrap.className = "btn-group dropdown-toggle fbt";
+
+
+          button = document.createElement("button");
+
+          button.className = "btn btn-default dropitem";
+          button.setAttribute("data-toggle","dropdown");
+          // button.setAttribute("data-hover","dropdown");
+          button.title = value["title"];
+          button.attributes["curpos"] = value["title"];
+          button.innerText = value["content"];
+          button.onclick = function (){
+            on_formulatbt_click(value);
+          };
+          dropdownwrap.appendChild(button);
+          if(value["childs"]){
+            var childs = document.createElement("ul");
+            childs.className = "dropdown-menu";
+            value["childs"].forEach((value)=>{
+              let li = document.createElement("li");
+              let a = document.createElement("a");
+              li.appendChild(a);
+              a.setAttribute("href","#");
+              a.innerText=value["content"];
+              a.title = value["title"];
+              a.setAttribute("curser",value["curser"])
+              a.onclick = function () {
+                on_formulatbt_click(value);
+              };
+              childs.appendChild(li);
+            });
+
+            dropdownwrap.appendChild(childs);
+          }
+
+
+          btarea.appendChild(dropdownwrap);
+        }else {
+          btwrap = document.createElement("div");
+          btwrap.className = "fbt";
+
+          button = document.createElement("button");
+          button.className = "btn btn-default";
+          button.title = value["title"];
+          button.attributes["curser"] = value["curser"];
+          button.innerText = value["content"];
+          button.onclick = function (){
+            on_formulatbt_click(value);
+          };
+
+          btwrap.appendChild(button);
+          btarea.appendChild(btwrap);
+        }
+      });
+    }
+
+    $(document).ready(function(){
+      init_button();
+      MathJax = {
+        "HTML-CSS": { linebreaks: { automatic: true } },
+        SVG: { linebreaks: { automatic: true } },
+        tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
+        svg: {fontCache: 'global'},
+        startup: {
+          ready: function () {
+            MathJax.startup.defaultReady();
+            MathJax.texReset();
+            MathJax.typesetClear();
+            MathJax.typesetPromise();
+          }
+        }
+      };
+
+
+
+      $(".dropdown-toggle").mouseenter(function() {
+        $(this).addClass("mousein");
+        if(!$(this).hasClass("open")){
+          $(this).find(".dropitem").dropdown("toggle");
+
+        }
+      }).mouseleave(function () {
+        $(this).removeClass("mousein");
+        setTimeout(()=>{
+          if($(this).hasClass("open")&&!$(this).hasClass("mousein")){
+            $(this).find(".dropitem").dropdown("toggle");
+          }
+        },20);
+      });
+
+      $(document).off('click.bs.dropdown.data-api');
+      $(".dropitem").click(function (e) {
+        $(this).dropdown("toggle");
+      });
+    });
+
+  </script>
+
+</head>
+
+<body>
+
+    <div id="frame">
+      <h1>$Live \TeX{}$<small> —— 在线$\LaTeX{}$公式编辑器</small></h1>
+
+      <div id="btarea">
+
+      </div>
+      <textarea id="input" οnchange="setPos()" οnfοcus="setPos()" class="panel panel-default col-xs-12" onkeyup="convert()" style="margin-top: 10px"></textarea>
+
+      <br />
+      <div class="right">
+        <input type="button" class="btn btn-default"value="清除历史记录" id="clear" onclick="clear_history()"/>
+        <input type="button" class="btn btn-default" value="保存历史" id="save" onclick="add_history()" />
+        <p id="warn" style="color: red"></p>
+      </div>
+      <br clear="all" />
+      <div id="output" class="panel panel-default"></div>
+      <div id="history"></div>
+    </div>
+    <div class="footer">Powered by <a href="https://github.com/sailist">Sailist</a> </div>
+
+
+</body>
+
+</html>

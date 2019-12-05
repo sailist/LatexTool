@@ -42,3 +42,7 @@ Then the content of clipboard will be:
    \label{fig:filename}
 \end{figure}
 ```
+
+## LaTeX formula Editor
+
+[click this link to editor](./latexEditor.html)
