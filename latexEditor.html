@@ -5,7 +5,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Live TeX</title>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+  <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
   <style>
+    ul{
+      min-width: auto !important;
+    }
     #input{
       box-sizing: border-box;
       height: 100px;
@@ -16,8 +25,12 @@
       box-sizing: border-box;
       margin-bottom: 5px;
     }
+    .btn{
+      min-width: 50px !important;
+    }
     .fbt {
       margin-right :2px;
+
       margin-bottom: 10px;
       display: inline-block;
     }
@@ -51,11 +64,6 @@
       /*clear: both;*/
     }
   </style>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
-  <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
   <script type="text/javascript">
     function copy(filed) {
       // var clipBoardContent= filed.innerText;
@@ -249,209 +257,555 @@
 
   <script>
     <!--公式按钮初始化-->
-    let formular = [
+    var matrixformular = [
       {
-        "group":false,
-        "title":"LaTeX",
-        "content":"$\\LaTeX$",
-        "value":"\\LaTeX",
-        "curser":0,
+        "begin":"\\begin{matrix}",
+        "end":"\\end{matrix}"
       },
       {
+        "begin":"\\begin{pmatrix}",
+        "end":"\\end{pmatrix}"
+      },
+      {
+        "begin":"\\begin{vmatrix}",
+        "end":"\\end{vmatrix}"
+      },
+      {
+        "begin":"\\begin{Vmatrix}",
+        "end":"\\end{Vmatrix}"
+      },
+      {
+        "begin":"\\begin{bmatrix}",
+        "end":"\\end{bmatrix}"
+      },
+      {
+        "begin":"\\left(\\begin{smallmatrix}",
+        "end":"\\end{smallmatrix}\\right)"
+      },
+      {
+        "begin":"\\begin{Bmatrix}",
+        "end":"\\end{Bmatrix}"
+      },
+    ];
+
+    var formular = [
+      {
+        "group":true, "title":"上标", "content":"$x^{a}$", "value":"^{}", "curser":-1,
+        "childs":[
+          {"group":false, "title":"下标", "content":"$x_{a}$", "value":"_{}", "curser":-1, },
+          {"group":false, "title":"上下标", "content":"$x_{b}^{a}$", "value":"_{}^{}", "curser":-4,},
+        ]
+      },
+      {
+        "group":true, "title":"分数", "content":"$\\frac{a}{b}$", "value":"\\frac{}{}", "curser":-3,
+        "childs":[
+          { "group":false, "title":"小分数", "content":"$\\tfrac{a}{b}$", "value":"\\tfrac{}{}", "curser":-3, },
+          { "group":false, "title":"可嵌套分数", "content":"$\\cfrac{a}{b\\cfrac{a}{b}}$", "value":"\\cfrac{}{}", "curser":-3, },
+        ]
+      },
+      {
+        'group': true, 'title': '间距', 'content': '$a\\!b $', 'value': '\\! ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\, ', 'content': '$a\\, b$', 'value': '\\, ', 'curser': 0} ,
+          {'group': false, 'title': '\\: ', 'content': '$a\\: b$', 'value': '\\: ', 'curser': 0} ,
+          {'group': false, 'title': '\\; ', 'content': '$a\\; b$', 'value': '\\; ', 'curser': 0} ,
+          {'group': false, 'title': '\\quad ', 'content': '$a\\quad b$', 'value': '\\quad ', 'curser': 0} ,
+          {'group': false, 'title': '\\qquad ', 'content': '$a\\qquad b$', 'value': '\\qquad ', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\tilde{} ', 'content': '$\\tilde{a} $', 'value': '\\tilde{} ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\breve{}', 'content': '$\\breve{a}$', 'value': '\\breve{}', 'curser': 0} ,
+          {'group': false, 'title': '\\bar{}', 'content': '$\\bar{a}$', 'value': '\\bar{}', 'curser': 0} ,
+          {'group': false, 'title': '\\vec{}', 'content': '$\\vec{a}$', 'value': '\\vec{}', 'curser': 0} ,
+          {'group': false, 'title': '\\not{a}', 'content': '$\\not{a}$', 'value': '\\not{a}', 'curser': 0} ,
+          {'group': false, 'title': '^{\\circ}', 'content': '$a^{\\circ}$', 'value': '^{\\circ}', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\{}\' ', 'content': '${a}\' $', 'value': '\\{}\' ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\dot{}', 'content': '$\\dot{a}$', 'value': '\\dot{}', 'curser': 0} ,
+          {'group': false, 'title': "{}''", 'content': "${a}''$", 'value': "{}''", 'curser': 0} ,
+          {'group': false, 'title': '\\ddot{}', 'content': '$\\ddot{a}$', 'value': '\\ddot{}', 'curser': 0} ,
+          {'group': false, 'title': '\\hat{}', 'content': '$\\hat{a}$', 'value': '\\hat{}', 'curser': 0} ,
+          {'group': false, 'title': '\\check{}', 'content': '$\\check{a}$', 'value': '\\check{}', 'curser': 0} ,
+          {'group': false, 'title': '\\grave{}', 'content': '$\\grave{a}$', 'value': '\\grave{}', 'curser': 0} ,
+          {'group': false, 'title': '\\acute{}', 'content': '$\\acute{a}$', 'value': '\\acute{}', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\widetilde{} ', 'content': '$\\widetilde{abc}$', 'value': '\\widetilde{}', 'curser': -1,
+        "childs":[
+          {'group': false, 'title': '\\widehat{}', 'content': '$\\widehat{abc}$', 'value': '\\widehat{}', 'curser': 0} ,
+          {'group': false, 'title': '\\overleftarrow{}', 'content': '$\\overleftarrow{abc}$', 'value': '\\overleftarrow{}', 'curser': 0} ,
+          {'group': false, 'title': '\\overrightarrow{}', 'content': '$\\overrightarrow{abc}$', 'value': '\\overrightarrow{}', 'curser': 0} ,
+          {'group': false, 'title': '\\overline{}', 'content': '$\\overline{abc}$', 'value': '\\overline{}', 'curser': 0} ,
+          {'group': false, 'title': '\\underline{}', 'content': '$\\underline{abc}$', 'value': '\\underline{}', 'curser': 0} ,
+          {'group': false, 'title': '\\overbrace{}', 'content': '$\\overbrace{abc}$', 'value': '\\overbrace{}', 'curser': 0} ,
+          {'group': false, 'title': '\\underbrace{}', 'content': '$\\underbrace{abc}$', 'value': '\\underbrace{}', 'curser': 0} ,
+          {'group': false, 'title': '\\overset{}{}', 'content': '$\\overset{abc}{abc}$', 'value': '\\overset{}{}', 'curser': 0} ,
+          {'group': false, 'title': '\\underset{}{}', 'content': '$\\underset{abc}{abc}$', 'value': '\\underset{}{}', 'curser': 0} ,
+        ]
+      } ,
+      {
+        "type":"space",
+      },
+      {
+        "group":true, "title":"偏导", "content":"$\\partial  $", "value":"\\partial ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\imath ', 'content': '$\\imath $', 'value': '\\imath ', 'curser': 0} ,
+          {'group': false, 'title': '\\jmath ', 'content': '$\\jmath $', 'value': '\\jmath ', 'curser': 0} ,
+          {'group': false, 'title': '\\Re ', 'content': '$\\Re $', 'value': '\\Re ', 'curser': 0} ,
+          {'group': false, 'title': '\\Im ', 'content': '$\\Im $', 'value': '\\Im ', 'curser': 0} ,
+          {'group': false, 'title': '\\forall ', 'content': '$\\forall $', 'value': '\\forall ', 'curser': 0} ,
+          {'group': false, 'title': '\\exists ', 'content': '$\\exists $', 'value': '\\exists ', 'curser': 0} ,
+          {'group': false, 'title': '\\top ', 'content': '$\\top $', 'value': '\\top ', 'curser': 0} ,
+          {'group': false, 'title': '\\S ', 'content': '$\\S $', 'value': '\\S ', 'curser': 0} ,
+          {'group': false, 'title': '\\$ ', 'content': '$\\$ $', 'value': '\\$ ', 'curser': 0,} ,
+        ]
+      },
+      {
+        "group":true, "title":"希腊字母Alpha", "content":"$\\alpha$", "value":"\\alpha ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\beta ', 'content': '$\\beta $', 'value': '\\beta ', 'curser': 0} ,
+          {'group': false, 'title': '\\gamma ', 'content': '$\\gamma $', 'value': '\\gamma ', 'curser': 0} ,
+          {'group': false, 'title': '\\delta ', 'content': '$\\delta $', 'value': '\\delta ', 'curser': 0} ,
+          {'group': false, 'title': '\\epsilon ', 'content': '$\\epsilon $', 'value': '\\epsilon ', 'curser': 0} ,
+          {'group': false, 'title': '\\varepsilon ', 'content': '$\\varepsilon $', 'value': '\\varepsilon ', 'curser': 0} ,
+          {'group': false, 'title': '\\zeta ', 'content': '$\\zeta $', 'value': '\\zeta ', 'curser': 0} ,
+          {'group': false, 'title': '\\eta ', 'content': '$\\eta $', 'value': '\\eta ', 'curser': 0} ,
+          {'group': false, 'title': '\\theta ', 'content': '$\\theta $', 'value': '\\theta ', 'curser': 0} ,
+          {'group': false, 'title': '\\vartheta ', 'content': '$\\vartheta $', 'value': '\\vartheta ', 'curser': 0} ,
+        ]
+      },
+      {
+        "group":true, "title":"\\lambda", "content":"$\\lambda$", "value":"\\lambda ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\kappa ', 'content': '$\\kappa $', 'value': '\\kappa ', 'curser': 0} ,
+          {'group': false, 'title': '\\iota ', 'content': '$\\iota $', 'value': '\\iota ', 'curser': 0} ,
+          {'group': false, 'title': '\\mu ', 'content': '$\\mu $', 'value': '\\mu ', 'curser': 0} ,
+          {'group': false, 'title': '\\nu ', 'content': '$\\nu $', 'value': '\\nu ', 'curser': 0} ,
+          {'group': false, 'title': '\\xi ', 'content': '$\\xi $', 'value': '\\xi ', 'curser': 0} ,
+          {'group': false, 'title': '\\pi ', 'content': '$\\pi $', 'value': '\\pi ', 'curser': 0} ,
+          {'group': false, 'title': '\\varpi ', 'content': '$\\varpi $', 'value': '\\varpi ', 'curser': 0} ,
+          {'group': false, 'title': '\\rho ', 'content': '$\\rho $', 'value': '\\rho ', 'curser': 0} ,
+          {'group': false, 'title': '\\varrho ', 'content': '$\\varrho $', 'value': '\\varrho ', 'curser': 0} ,
+        ]
+      },
+      {
+        "group":true, "title":"\\sigma ", "content":"$\\sigma$", "value":"\\sigma ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\varsigma ', 'content': '$\\varsigma $', 'value': '\\varsigma ', 'curser': 0} ,
+          {'group': false, 'title': '\\tau ', 'content': '$\\tau $', 'value': '\\tau ', 'curser': 0} ,
+          {'group': false, 'title': '\\upsilon ', 'content': '$\\upsilon $', 'value': '\\upsilon ', 'curser': 0} ,
+          {'group': false, 'title': '\\phi ', 'content': '$\\phi $', 'value': '\\phi ', 'curser': 0} ,
+          {'group': false, 'title': '\\varphi ', 'content': '$\\varphi $', 'value': '\\varphi ', 'curser': 0} ,
+          {'group': false, 'title': '\\chi ', 'content': '$\\chi $', 'value': '\\chi ', 'curser': 0} ,
+          {'group': false, 'title': '\\psi ', 'content': '$\\psi $', 'value': '\\psi ', 'curser': 0} ,
+          {'group': false, 'title': '\\omega ', 'content': '$\\omega $', 'value': '\\omega ', 'curser': 0} ,
+        ]
+      },
+      {
+        "type":"space",
+      },
+      {
+        'group': true, 'title': '\\star ', 'content': '$\\star $', 'value': '\\star ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\bigstar ', 'content': '$\\bigstar $', 'value': '\\bigstar ', 'curser': 0} ,
+          {'group': false, 'title': '\\blacklozenge ', 'content': '$\\blacklozenge $', 'value': '\\blacklozenge ', 'curser': 0} ,
+          {'group': false, 'title': '\\bullet ', 'content': '$\\bullet $', 'value': '\\bullet ', 'curser': 0} ,
+          {'group': false, 'title': '\\blacksquare ', 'content': '$\\blacksquare $', 'value': '\\blacksquare ', 'curser': 0} ,
+          {'group': false, 'title': '\\blacktriangle ', 'content': '$\\blacktriangle $', 'value': '\\blacktriangle ', 'curser': 0} ,
+          {'group': false, 'title': '\\blacktriangledown ', 'content': '$\\blacktriangledown $', 'value': '\\blacktriangledown ', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\circ ', 'content': '$\\circ $', 'value': '\\circ ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\ominus ', 'content': '$\\ominus $', 'value': '\\ominus ', 'curser': 0} ,
+          {'group': false, 'title': '\\oplus ', 'content': '$\\oplus $', 'value': '\\oplus ', 'curser': 0} ,
+          {'group': false, 'title': '\\circledcirc ', 'content': '$\\circledcirc $', 'value': '\\circledcirc ', 'curser': 0} ,
+          {'group': false, 'title': '\\oslash ', 'content': '$\\oslash $', 'value': '\\oslash ', 'curser': 0} ,
+          {'group': false, 'title': '\\otimes ', 'content': '$\\otimes $', 'value': '\\otimes ', 'curser': 0} ,
+          {'group': false, 'title': '\\circledast ', 'content': '$\\circledast $', 'value': '\\circledast ', 'curser': 0} ,
+          {'group': false, 'title': '\\circleddash ', 'content': '$\\circleddash $', 'value': '\\circleddash ', 'curser': 0} ,
+          {'group': false, 'title': '\\odot ', 'content': '$\\odot $', 'value': '\\odot ', 'curser': 0} ,
+          {'group': false, 'title': '\\bigcirc ', 'content': '$\\bigcirc $', 'value': '\\bigcirc ', 'curser': 0} ,
+          {'group': false, 'title': '\\bigodot ', 'content': '$\\bigodot $', 'value': '\\bigodot ', 'curser': 0} ,
+          {'group': false, 'title': '\\bigoplus ', 'content': '$\\bigoplus $', 'value': '\\bigoplus ', 'curser': 0} ,
+          {'group': false, 'title': '\\bigotimes ', 'content': '$\\bigotimes $', 'value': '\\bigotimes ', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\triangleleft ', 'content': '$\\triangleleft $', 'value': '\\triangleleft ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\triangleright ', 'content': '$\\triangleright $', 'value': '\\triangleright ', 'curser': 0} ,
+          {'group': false, 'title': '\\triangle ', 'content': '$\\triangle $', 'value': '\\triangle ', 'curser': 0} ,
+          {'group': false, 'title': '\\triangledown ', 'content': '$\\triangledown $', 'value': '\\triangledown ', 'curser': 0} ,
+          {'group': false, 'title': '\\bigtriangleup ', 'content': '$\\bigtriangleup $', 'value': '\\bigtriangleup ', 'curser': 0} ,
+          {'group': false, 'title': '\\bigtriangledown ', 'content': '$\\bigtriangledown $', 'value': '\\bigtriangledown ', 'curser': 0} ,
+          {'group': false, 'title': '\\diamond  ', 'content': '$\\diamond $', 'value': '\\diamond ', 'curser': 0} ,
+          {'group': false, 'title': '\\lozenge ', 'content': '$\\lozenge $', 'value': '\\lozenge ', 'curser': 0} ,
+          {'group': false, 'title': '\\square ', 'content': '$\\square $', 'value': '\\square ', 'curser': 0} ,
+
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\cap ', 'content': '$\\cap $', 'value': '\\cap ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\Cap ', 'content': '$\\Cap $', 'value': '\\Cap ', 'curser': 0} ,
+          {'group': false, 'title': '\\sqcap ', 'content': '$\\sqcap $', 'value': '\\sqcap ', 'curser': 0} ,
+          {'group': false, 'title': '\\wedge ', 'content': '$\\wedge $', 'value': '\\wedge ', 'curser': 0} ,
+          {'group': false, 'title': '\\barwedge ', 'content': '$\\barwedge $', 'value': '\\barwedge ', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\cup ', 'content': '$\\cup $', 'value': '\\cup ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\Cup ', 'content': '$\\Cup $', 'value': '\\Cup ', 'curser': 0} ,
+          {'group': false, 'title': '\\sqcup ', 'content': '$\\sqcup $', 'value': '\\sqcup ', 'curser': 0} ,
+          {'group': false, 'title': '\\vee ', 'content': '$\\vee $', 'value': '\\vee ', 'curser': 0} ,
+          {'group': false, 'title': '\\veebar ', 'content': '$\\veebar $', 'value': '\\veebar ', 'curser': 0} ,
+          {'group': false, 'title': '\\uplus ', 'content': '$\\uplus $', 'value': '\\uplus ', 'curser': 0} ,
+          {'group': false, 'title': '\\amalg  ', 'content': '$\\amalg $', 'value': '\\amalg ', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\subset ', 'content': '$\\subset $', 'value': '\\subset ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\sqsubseteq ', 'content': '$\\sqsubseteq $', 'value': '\\sqsubseteq ', 'curser': 0} ,
+          {"group": false, "title":"\\sqsubset", "content":"$\\sqsubset $", "value":"\\sqsubset ", "curser":0,} ,
+          {'group': false, 'title': '\\subseteq ', 'content': '$\\subseteq $', 'value': '\\subseteq ', 'curser': 0} ,
+          {'group': false, 'title': '\\nsubseteq ', 'content': '$\\nsubseteq $', 'value': '\\nsubseteq ', 'curser': 0} ,
+          {'group': false, 'title': '\\subseteqq ', 'content': '$\\subseteqq $', 'value': '\\subseteqq ', 'curser': 0} ,
+          {'group': false, 'title': '\\nsubseteq ', 'content': '$\\nsubseteq $', 'value': '\\nsubseteq ', 'curser': 0} ,
+          {'group': false, 'title': '\\in ', 'content': '$\\in $', 'value': '\\in ', 'curser': 0} ,
+          {'group': false, 'title': '\\notin ', 'content': '$\\notin $', 'value': '\\notin ', 'curser': 0} ,
+        ]
+      },
+      {
+        'group': true, 'title': '\\supset ', 'content': '$\\supset $', 'value': '\\supset ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\sqsupseteq ', 'content': '$\\sqsupseteq $', 'value': '\\sqsupseteq ', 'curser': 0} ,
+          {"group": false, "title":"\\sqsupset ", "content":"$\\sqsupset $", "value":"\\sqsupset ", "curser":0} ,
+          {'group': false, 'title': '\\supseteq ', 'content': '$\\supseteq $', 'value': '\\supseteq ', 'curser': 0} ,
+          {'group': false, 'title': '\\nsupseteq ', 'content': '$\\nsupseteq $', 'value': '\\nsupseteq ', 'curser': 0} ,
+          {'group': false, 'title': '\\supseteqq ', 'content': '$\\supseteqq $', 'value': '\\supseteqq ', 'curser': 0} ,
+          {'group': false, 'title': '\\nsupseteqq ', 'content': '$\\nsupseteqq $', 'value': '\\nsupseteqq ', 'curser': 0} ,
+          {'group': false, 'title': '\\ni ', 'content': '$\\ni $', 'value': '\\ni ', 'curser': 0} ,
+        ]
+      },
+      {"type":"space",},
+      {
         "group":true,
-        "title":"上标",
-        "content":"$x^{a}$",
-        "value":"^{}",
+        "title":"MathBold",
+        "content":"$\\mathbf{MathBold}$",
+        "value":"\\mathbf{}",
         "curser":-1,
         "childs":[
-          {
-            "group":false,
-            "title":"下标",
-            "content":"$x_{a}$",
-            "value":"_{}",
-            "curser":-1,
-          },
-          {
-            "group":false,
-            "title":"上下标",
-            "content":"$x_{b}^{a}$",
-            "value":"_{}^{}",
-            "curser":-4,
-          },
-        ]
-      },
-      {
-        "group":false,
-        "title":"分数",
-        "content":"$\\frac{a}{b}$",
-        "value":"\\frac{}{}",
-        "curser":-3,
-      },
-      {
-        "group":true,
-        "title":"积分",
-        "content":"$\\int$",
-        "value":"\\int ",
-        "curser":0,
-        "childs":[
-          {
-            "group":false,
-            "title":"积分+上下标",
-            "content":"$\\int_{b}^{a}$",
-            "value":"\\int_{}^{}",
-            "curser":-4,
-          },
-          {
-            "group":false,
-            "title":"闭曲线积分",
-            "content":"$\\oint$",
-            "value":"\\oint ",
-            "curser":0,
-          },
-          {
-            "group":false,
-            "title":"闭曲线积分+上下标",
-            "content":"$\\oint_{b}^{a}$",
-            "value":"\\oint_{}^{}",
-            "curser":-4,
-          },
-          {
-            "group":false,
-            "title":"二重积分",
-            "content":"$\\iint_{b}^{a}$",
-            "value":"\\iint_{}^{}",
-            "curser":-4,
-          },
-          {
-            "group":false,
-            "title":"三重积分",
-            "content":"$\\iiint_{b}^{a}$",
-            "value":"\\int_{}^{}",
-            "curser":-4,
-          },
+          {'group': false, 'title': '意大利\\mathit{}', 'content': '$\\mathit{MathItlian}$', 'value': '\\mathit{}', 'curser': -1} ,
+          {'group': false, 'title': '罗马体\\mathrm{}', 'content': '$\\mathrm{MathRoman}$', 'value': '\\mathrm{}', 'curser': -1} ,
+          {'group': false, 'title': '花体\\mathfrak{}', 'content': '$\\mathfrak{MathFrak}$', 'value': '\\mathfrak{}', 'curser': -1} ,
+          {'group': false, 'title': '\\mathbb{}', 'content': '$\\mathbb{Math}$', 'value': '\\mathbb{}', 'curser': -1} ,
         ]
       },
       {
         "group":true,
-        "title":"小括号",
-        "content":"$\\left( \\right)$",
-        "value":"\\left(  \\right)",
-        "curser":-8,
+        "title":"粗体",
+        "content":"$\\textbf{文本粗体}$",
+        "value":"\\textbf{}",
+        "curser":-1,
         "childs":[
-          {
-            "group":false,
-            "title":"大括号",
-            "content":"$\\left\\{ \\right\\}$",
-            "value":"\\left\\{  \\right\\}",
-            "curser":-9,
-          },
-          {
-            "group":false,
-            "title":"中括号",
-            "content":"$\\left[\\quad{}\\right]$",
-            "value":"\\left[  \\right]",
-            "curser":-8,
-          },
-          {
-            "group":false,
-            "title":"双线括号",
-            "content":"$\\left\\| \\right\\|$",
-            "value":"\\left\\|  \\right\\|",
-            "curser":-9,
-          },
-          {
-            "group":false,
-            "title":"左括号",
-            "content":"$\\left( \\right.$",
-            "value":"\\left(  \\right.",
-            "curser":-8,
-          },
-          {
-            "group":false,
-            "title":"右括号",
-            "content":"$\\quad\\left. \\right)$",
-            "value":"\\left.  \\right)",
-            "curser":-8,
-          },
+          {'group': false, 'title': '\\textit{}', 'content': '$\\textit{文本斜体}$', 'value': '\\textit{}', 'curser': -1} ,
+          {'group': false, 'title': '\\textrm{}', 'content': '$\\textrm{文本罗马体}$', 'value': '\\textrm{}', 'curser': -1} ,
+          {'group': false, 'title': '\\texttt{}', 'content': '$\\texttt{文本印刷体}$', 'value': '\\texttt{}', 'curser': -1} ,
+        ]
+      },
+      {"type":"br",},
+      {
+        "group":true, "title":"积分", "content":"$\\int$", "value":"\\int ", "curser":0,
+        "childs":[
+          { "group":false, "title":"积分+上下标", "content":"$\\int_{b}^{a}$", "value":"\\int_{}^{}", "curser":-4, },
+          { "group":false, "title":"闭曲线积分", "content":"$\\oint$", "value":"\\oint ", "curser":0, },
+          { "group":false, "title":"闭曲线积分+上下标", "content":"$\\oint_{b}^{a}$", "value":"\\oint_{}^{}", "curser":-4, },
+          { "group":false, "title":"二重积分", "content":"$\\iint_{b}^{a}$", "value":"\\iint_{}^{}", "curser":-4, },
+          { "group":false, "title":"三重积分", "content":"$\\iiint_{b}^{a}$", "value":"\\iiint_{}^{}", "curser":-4, },
+        ]
+      },
+      {
+        "group":true, "title":"小括号", "content":"$\\left( \\right)$", "value":"\\left(  \\right)", "curser":-8,
+        "childs":[
+          { "group":false, "title":"大括号", "content":"$\\left\\{ \\right\\}$", "value":"\\left\\{  \\right\\}", "curser":-9, },
+          { "group":false, "title":"中括号", "content":"$\\left[\\quad{}\\right]$", "value":"\\left[  \\right]", "curser":-8, },
+          { "group":false, "title":"双线括号", "content":"$\\left\\| \\right\\|$", "value":"\\left\\|  \\right\\|", "curser":-9, },
+          { "group":false, "title":"尖括号", "content":"$\\left\\langle \\quad \\right\\rangle$", "value":"\\left\\langle  \\right\\rangle", "curser":-14, },
+          { "group":false, "title":"向上取整", "content":"$\\left\\lceil\\quad  \\right\\rceil$", "value":"\\left\\lceil  \\right\\rceil", "curser":-13, },
+          { "group":false, "title":"向下取整", "content":"$\\left\\lfloor \\quad \\right\\rfloor$", "value":"\\left\\lfloor  \\right\\rfloor", "curser":-14, },
+          { "group":false, "title":"左括号", "content":"$\\left( \\right.$", "value":"\\left(  \\right.", "curser":-8, },
+          { "group":false, "title":"右括号", "content":"$\\quad\\left. \\right)$", "value":"\\left.  \\right)", "curser":-8, },
         ],
       },
       {
-        "group":true,
-        "title":"交",
-        "content":"$\\bigcap$",
-        "value":"\\bigcap ",
-        "curser":0,
+        "group":true, "title":"交", "content":"$\\bigcap$", "value":"\\bigcap ", "curser":0,
+        "childs":[
+          {"group":false,"title":"并","content":"$\\bigcup$", "value":"\\bigcup ","curser":0,},
+        ]
+      },
+      {
+        "group":true, "title":"求和", "content":"$\\sum$", "value":"\\sum ", "curser":0,
         "childs":[
 
         ]
       },
       {
-        "group":true,
-        "title":"求和",
-        "content":"$\\sum$",
-        "value":"\\sum ",
-        "curser":0,
+        "group":true, "title":"开平方", "content":"$\\sqrt{a}$","value":"\\sqrt{}", "curser":-1,
+        "childs":[
+          {"group":false, "title":"开n次方", "content":"$\\sqrt[n]{a}$", "value":"\\sqrt[]{}", "curser":-3,},
+        ]
+      },
+      {
+        "group":true, "title":"乘积", "content":"$\\prod$", "value":"\\prod ", "curser":0,
+        "childs":[
+          {"group":false, "title":"范围乘积", "content":"$\\prod_{b}^{a}$", "value":"\\prod_{}^{}", "curser":-4,},
+          {"group":false, "title":"上积", "content":"$\\coprod $", "value":"\\coprod ", "curser":0,},
+          {"group":false, "title":"范围上积", "content":"$\\coprod_{b}^{a}$", "value":"\\coprod_{}^{}", "curser":-4,},
+        ]
+      },
+      {"type":"space",},
+      {
+        "group":true, "title":"小于", "content":"$<$", "value":"< ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\leq ', 'content': '$\\leq $', 'value': '\\leq ', 'curser': 0} ,
+          {'group': false, 'title': '\\leqslant ', 'content': '$\\leqslant $', 'value': '\\leqslant ', 'curser': 0} ,
+          {'group': false, 'title': '\\nless ', 'content': '$\\nless $', 'value': '\\nless ', 'curser': 0} ,
+          {'group': false, 'title': '\\nleqslant ', 'content': '$\\nleqslant $', 'value': '\\nleqslant ', 'curser': 0} ,
+          {'group': false, 'title': '\\prec ', 'content': '$\\prec $', 'value': '\\prec ', 'curser': 0} ,
+          {'group': false, 'title': '\\preceq ', 'content': '$\\preceq $', 'value': '\\preceq ', 'curser': 0} ,
+          {'group': false, 'title': '\\ll ', 'content': '$\\ll $', 'value': '\\ll ', 'curser': 0} ,
+          {'group': false, 'title': '\\vdash ', 'content': '$\\vdash $', 'value': '\\vdash ', 'curser': 0} ,
+          {'group': false, 'title': '\\smile ', 'content': '$\\smile $', 'value': '\\smile ', 'curser': 0} ,
+          {'group': false, 'title': '\\models ', 'content': '$\\models $', 'value': '\\models ', 'curser': 0} ,
+          {'group': false, 'title': '\\mid ', 'content': '$\\mid $', 'value': '\\mid ', 'curser': 0} ,
+          {'group': false, 'title': '\\bowtie ', 'content': '$\\bowtie $', 'value': '\\bowtie ', 'curser': 0} ,
+        ]
+      },
+      {
+        "group":true, "title":"大于", "content":"$>$", "value":"> ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\geq ', 'content': '$\\geq $', 'value': '\\geq ', 'curser': 0} ,
+          {'group': false, 'title': '\\geqslant ', 'content': '$\\geqslant $', 'value': '\\geqslant ', 'curser': 0} ,
+          {'group': false, 'title': '\\ngtr ', 'content': '$\\ngtr $', 'value': '\\ngtr ', 'curser': 0} ,
+          {'group': false, 'title': '\\ngeqslant ', 'content': '$\\ngeqslant $', 'value': '\\ngeqslant ', 'curser': 0} ,
+          {'group': false, 'title': '\\succ ', 'content': '$\\succ $', 'value': '\\succ ', 'curser': 0} ,
+          {'group': false, 'title': '\\succeq ', 'content': '$\\succeq $', 'value': '\\succeq ', 'curser': 0} ,
+          {'group': false, 'title': '\\gg ', 'content': '$\\gg $', 'value': '\\gg ', 'curser': 0} ,
+          {'group': false, 'title': '\\dashv ', 'content': '$\\dashv $', 'value': '\\dashv ', 'curser': 0} ,
+          {'group': false, 'title': '\\frown ', 'content': '$\\frown $', 'value': '\\frown ', 'curser': 0} ,
+          {'group': false, 'title': '\\perp ', 'content': '$\\perp $', 'value': '\\perp ', 'curser': 0} ,
+          {'group': false, 'title': '\\parallel ', 'content': '$\\parallel $', 'value': '\\parallel ', 'curser': 0} ,
+          {'group': false, 'title': '\\Join ', 'content': '$\\Join $', 'value': '\\Join ', 'curser': 0} ,
+        ]
+      },
+      {
+        "group":true, "title":"等于", "content":"$=$", "value":"= ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\doteq ', 'content': '$\\doteq $', 'value': '\\doteq ', 'curser': 0} ,
+          {'group': false, 'title': '\\equiv ', 'content': '$\\equiv $', 'value': '\\equiv ', 'curser': 0} ,
+          {'group': false, 'title': '\\neq ', 'content': '$\\neq $', 'value': '\\neq ', 'curser': 0} ,
+          {'group': false, 'title': '\\not\\equiv ', 'content': '$\\not\\equiv $', 'value': '\\not\\equiv ', 'curser': 0} ,
+          {'group': false, 'title': '\\overset{\\underset{\\mathrm{def}}{}}{=}', 'content': '$\\overset{\\underset{\\mathrm{def}}{}}{=}$', 'value': '\\overset{\\underset{\\mathrm{def}}{}}{=}', 'curser': 0} ,
+          {'group': false, 'title': '\\sim ', 'content': '$\\sim $', 'value': '\\sim ', 'curser': 0} ,
+          {'group': false, 'title': '\\approx ', 'content': '$\\approx $', 'value': '\\approx ', 'curser': 0} ,
+          {'group': false, 'title': '\\simeq ', 'content': '$\\simeq $', 'value': '\\simeq ', 'curser': 0} ,
+          {'group': false, 'title': '\\cong ', 'content': '$\\cong $', 'value': '\\cong ', 'curser': 0} ,
+          {'group': false, 'title': '\\asymp ', 'content': '$\\asymp $', 'value': '\\asymp ', 'curser': 0} ,
+          {'group': false, 'title': '\\propto ', 'content': '$\\propto $', 'value': '\\propto ', 'curser': 0} ,
+        ]
+      },
+      {
+        "group":true, "title":"角度符号", "content":"$\\angle$", "value":"\\angle ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\measuredangle ', 'content': '$\\measuredangle $', 'value': '\\measuredangle ', 'curser': 0} ,
+          {'group': false, 'title': '\\sphericalangle ', 'content': '$\\sphericalangle $', 'value': '\\sphericalangle ', 'curser': 0} ,
+          {'group': false, 'title': '\\varnothing ', 'content': '$\\varnothing $', 'value': '\\varnothing ', 'curser': 0} ,
+          {'group': false, 'title': '\\infty ', 'content': '$\\infty $', 'value': '\\infty ', 'curser': 0} ,
+          {'group': false, 'title': '\\mho ', 'content': '$\\mho $', 'value': '\\mho ', 'curser': 0} ,
+          {'group': false, 'title': '\\wp ', 'content': '$\\wp $', 'value': '\\wp ', 'curser': 0} ,
+        ]
+      },
+      {"type":"space"},
+      {
+        "group":true, "title":"因为", "content":"$\\therefore $", "value":"\\therefore ", "curser":0,
+        "childs":[
+          {'group': false, 'title': '\\所以 ', 'content': '$\\because $', 'value': '\\because ', 'curser': 0} ,
+          {'group': false, 'title': '\\cdot ', 'content': '$\\cdot $', 'value': '\\cdot ', 'curser': 0} ,
+          {'group': false, 'title': '\\cdots ', 'content': '$\\cdots $', 'value': '\\cdots ', 'curser': 0} ,
+          {'group': false, 'title': '\\ddots ', 'content': '$\\ddots $', 'value': '\\ddots ', 'curser': 0} ,
+          {'group': false, 'title': '\\vdots ', 'content': '$\\vdots $', 'value': '\\vdots ', 'curser': 0} ,
+
+        ]
+      },
+      {
+        "group":true, "title":"二项式", "content":"$\\binom{r}{n}$", "value":"\\binom{}{}", "curser":-3,
         "childs":[
 
         ]
       },
       {
-        "group":true,
-        "title":"乘积",
-        "content":"$\\prod$",
-        "value":"\\prod ",
-        "curser":0,
+        'group': true, 'title': '\\to  ', 'content': '$\\to  $', 'value': '\\to  ', 'curser': 0,
         "childs":[
+          {'group': false, 'title': '\\rightarrow ', 'content': '$\\rightarrow $', 'value': '\\rightarrow ', 'curser': 0} ,
+          {'group': false, 'title': '\\mapsto ', 'content': '$\\mapsto $', 'value': '\\mapsto ', 'curser': 0,},
+          {'group': false, 'title': '\\Rightarrow ', 'content': '$\\Rightarrow $', 'value': '\\Rightarrow ', 'curser': 0} ,
+          {'group': false, 'title': '\\rightharpoonup ', 'content': '$\\rightharpoonup $', 'value': '\\rightharpoonup ', 'curser': 0} ,
+          {'group': false, 'title': '\\rightharpoondown ', 'content': '$\\rightharpoondown $', 'value': '\\rightharpoondown ', 'curser': 0} ,
+          {'group': false, 'title': '\\overset{}{\\rightarrow}', 'content': '$\\overset{abc}{\\rightarrow}$', 'value': '\\overset{}{\\rightarrow}', 'curser': 0} ,
+          {'group': false, 'title': '\\underset{}{\\rightarrow}', 'content': '$\\underset{abc}{\\rightarrow}$', 'value': '\\underset{}{\\rightarrow}', 'curser': 0} ,
+          {'group': false, 'title': '\\xrightarrow[]{}', 'content': '$\\xrightarrow[xyz]{abc}$', 'value': '\\xrightarrow[]{}', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\leftarrow ', 'content': '$\\leftarrow $', 'value': '\\leftarrow ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\Leftarrow ', 'content': '$\\Leftarrow $', 'value': '\\Leftarrow ', 'curser': 0} ,
+          {'group': false, 'title': '\\leftharpoonup ', 'content': '$\\leftharpoonup $', 'value': '\\leftharpoonup ', 'curser': 0} ,
+          {'group': false, 'title': '\\leftharpoondown ', 'content': '$\\leftharpoondown $', 'value': '\\leftharpoondown ', 'curser': 0} ,
+          {'group': false, 'title': '\\overset{}{\\leftarrow}', 'content': '$\\overset{abc}{\\leftarrow}$', 'value': '\\overset{}{\\leftarrow}', 'curser': 0} ,
+          {'group': false, 'title': '\\underset{}{\\leftarrow}', 'content': '$\\underset{abc}{\\leftarrow}$', 'value': '\\underset{}{\\leftarrow}', 'curser': 0} ,
+          {'group': false, 'title': '\\xleftarrow[]{}', 'content': '$\\xleftarrow[xyz]{abc}$', 'value': '\\xleftarrow[]{}', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\leftrightarrow ', 'content': '$\\leftrightarrow $', 'value': '\\leftrightarrow ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\Leftrightarrow ', 'content': '$\\Leftrightarrow $', 'value': '\\Leftrightarrow ', 'curser': 0} ,
+          {'group': false, 'title': '\\rightleftharpoons ', 'content': '$\\rightleftharpoons $', 'value': '\\rightleftharpoons ', 'curser': 0} ,
+          {'group': false, 'title': '\\leftrightharpoons ', 'content': '$\\leftrightharpoons $', 'value': '\\leftrightharpoons ', 'curser': 0} ,
 
         ]
       },
       {
-        "group":true,
-        "title":"希腊字母Alpha",
-        "content":"$\\alpha$",
-        "value":"\\alpha ",
-        "curser":0,
+        'group': true, 'title': '+ ', 'content': '$+ $', 'value': '+ ', 'curser': 0,
         "childs":[
-
+          {'group': false, 'title': '\\pm ', 'content': '$\\pm $', 'value': '\\pm ', 'curser': 0} ,
+          {'group': false, 'title': '\\mp ', 'content': '$\\mp $', 'value': '\\mp ', 'curser': 0} ,
+          {'group': false, 'title': '\\times ', 'content': '$\\times $', 'value': '\\times ', 'curser': 0} ,
+          {'group': false, 'title': '\\ast ', 'content': '$\\ast $', 'value': '\\ast ', 'curser': 0} ,
+          {'group': false, 'title': '\\div ', 'content': '$\\div $', 'value': '\\div ', 'curser': 0} ,
+          {'group': false, 'title': '\\setminus ', 'content': '$\\setminus $', 'value': '\\setminus ', 'curser': 0} ,
+          {'group': false, 'title': '\\dotplus ', 'content': '$\\dotplus $', 'value': '\\dotplus ', 'curser': 0} ,
+          {'group': false, 'title': '\\cdot ', 'content': '$\\cdot $', 'value': '\\cdot ', 'curser': 0} ,
         ]
-      },
+      } ,
+      {"type":"space"},
+      {"type":"space",},
       {
-        "group":true,
-        "title":"大于",
-        "content":"$>$",
-        "value":"> ",
-        "curser":0,
+        'group': true, 'title': '\\sin ', 'content': '$\\sin $', 'value': '\\sin ', 'curser': 0,
         "childs":[
-
+          {'group': false, 'title': '\\cos', 'content': '$\\cos$', 'value': '\\cos', 'curser': 0} ,
+          {'group': false, 'title': '\\tan', 'content': '$\\tan$', 'value': '\\tan', 'curser': 0} ,
+          {'group': false, 'title': '\\csc', 'content': '$\\csc$', 'value': '\\csc', 'curser': 0} ,
+          {'group': false, 'title': '\\sec', 'content': '$\\sec$', 'value': '\\sec', 'curser': 0} ,
+          {'group': false, 'title': '\\cot', 'content': '$\\cot$', 'value': '\\cot', 'curser': 0} ,
+          {'group': false, 'title': '\\sinh', 'content': '$\\sinh$', 'value': '\\sinh', 'curser': 0} ,
+          {'group': false, 'title': '\\cosh', 'content': '$\\cosh$', 'value': '\\cosh', 'curser': 0} ,
+          {'group': false, 'title': '\\tanh', 'content': '$\\tanh$', 'value': '\\tanh', 'curser': 0} ,
+          {'group': false, 'title': '\\coth', 'content': '$\\coth$', 'value': '\\coth', 'curser': 0} ,
+          {'group': false, 'title': '\\sin^{-1}', 'content': '$\\sin^{-1}$', 'value': '\\sin^{-1}', 'curser': 0} ,
+          {'group': false, 'title': '\\cos^{-1}', 'content': '$\\cos^{-1}$', 'value': '\\cos^{-1}', 'curser': 0} ,
+          {'group': false, 'title': '\\tan^{-1}', 'content': '$\\tan^{-1}$', 'value': '\\tan^{-1}', 'curser': 0} ,
+          {'group': false, 'title': '\\sinh^{-1}', 'content': '$\\sinh^{-1}$', 'value': '\\sinh^{-1}', 'curser': 0} ,
+          {'group': false, 'title': '\\cosh^{-1}', 'content': '$\\cosh^{-1}$', 'value': '\\cosh^{-1}', 'curser': 0} ,
+          {'group': false, 'title': '\\tanh^{-1}', 'content': '$\\tanh^{-1}$', 'value': '\\tanh^{-1}', 'curser': 0} ,
+        ]} ,
+      {
+        'group': true, 'title': '\\exp ', 'content': '$\\exp $', 'value': '\\exp', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\lg', 'content': '$\\lg$', 'value': '\\lg', 'curser': 0} ,
+          {'group': false, 'title': '\\ln', 'content': '$\\ln$', 'value': '\\ln', 'curser': 0} ,
+          {'group': false, 'title': '\\log', 'content': '$\\log$', 'value': '\\log', 'curser': 0} ,
+          {'group': false, 'title': '\\log_{e}', 'content': '$\\log_{e}$', 'value': '\\log_{e}', 'curser': 0} ,
+          {'group': false, 'title': '\\log_{10}', 'content': '$\\log_{10}$', 'value': '\\log_{10}', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\arcsin ', 'content': '$\\arcsin $', 'value': '\\arcsin ', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\arcsin', 'content': '$\\arcsin$', 'value': '\\arcsin', 'curser': 0} ,
+          {'group': false, 'title': '\\arccos', 'content': '$\\arccos$', 'value': '\\arccos', 'curser': 0} ,
+          {'group': false, 'title': '\\arctan', 'content': '$\\arctan$', 'value': '\\arctan', 'curser': 0} ,
+          {'group': false, 'title': '\\textrm{arccsc}', 'content': '$\\textrm{arccsc}$', 'value': '\\textrm{arccsc}', 'curser': 0} ,
+          {'group': false, 'title': '\\textrm{arcsec}', 'content': '$\\textrm{arcsec}$', 'value': '\\textrm{arcsec}', 'curser': 0} ,
+          {'group': false, 'title': '\\textrm{arccot}', 'content': '$\\textrm{arccot}$', 'value': '\\textrm{arccot}', 'curser': 0} ,
+        ]
+      } ,
+      {
+        'group': true, 'title': '\\lim ', 'content': '$\\lim $', 'value': '\\lim', 'curser': 0,
+        "childs":[
+          {'group': false, 'title': '\\liminf', 'content': '$\\liminf$', 'value': '\\liminf', 'curser': 0} ,
+          {'group': false, 'title': '\\limsup', 'content': '$\\limsup$', 'value': '\\limsup', 'curser': 0} ,
+          {'group': false, 'title': '\\max', 'content': '$\\max$', 'value': '\\max', 'curser': 0} ,
+          {'group': false, 'title': '\\min', 'content': '$\\min$', 'value': '\\min', 'curser': 0} ,
+          {'group': false, 'title': '\\arg', 'content': '$\\arg$', 'value': '\\arg', 'curser': 0} ,
+          {'group': false, 'title': '\\det', 'content': '$\\det$', 'value': '\\det', 'curser': 0} ,
+          {'group': false, 'title': '\\dim', 'content': '$\\dim$', 'value': '\\dim', 'curser': 0} ,
+          {'group': false, 'title': '\\gcd', 'content': '$\\gcd$', 'value': '\\gcd', 'curser': 0} ,
+          {'group': false, 'title': '\\hom', 'content': '$\\hom$', 'value': '\\hom', 'curser': 0} ,
+          {'group': false, 'title': '\\ker', 'content': '$\\ker$', 'value': '\\ker', 'curser': 0} ,
+          {'group': false, 'title': '\\Pr', 'content': '$\\Pr$', 'value': '\\Pr', 'curser': 0} ,
+          {'group': false, 'title': '\\sup', 'content': '$\\sup$', 'value': '\\sup', 'curser': 0} ,
+        ]
+      } ,
+      {
+        "group":true, "title":"LaTeX", "content":"$\\LaTeX$", "value":"\\LaTeX ", "curser":0, "childs":[
+          {"group":false, "title":"TeX", "content":"$\\TeX$", "value":"\\TeX ","curser":0,},
         ]
       },
       {
         "type":"br"
       },
-      {
-        "group":true,
-        "title":"大于",
-        "content":"$\\begin{matrix}.&.&. \\\\.& . & .\\end{matrix}$",
-        "value":"\\begin{matrix}\n&  & \\\\\n&  & \\\\\n&  &\n\\end{matrix}",
-        "curser":0,
-        "childs":[
-
-        ]
-      },
-      {
-        "group":true,
-        "title":"大于",
-        "content":"$\\binom{r}{n}$",
-        "value":"\\binom{}{}",
-        "curser":-3,
-        "childs":[
-
-        ]
-      },
-
-
-
     ];
+
+    function create_matrix_str(value, col, row , pad) {
+      s = value["begin"]+"\n";
+      for(i = 0;i<row;i++) {
+        for (j = 0; j < col - 1; j++) {
+          s += pad+" &";
+        }
+        if (i !== row - 1) {
+          s += pad+" \\\\\n";
+        }else{
+          s += pad+"\n";
+        }
+      }
+      s += value["end"];
+      value["value"] = s;
+      value["curser"] = 0;
+      return value;
+    }
+
+    function show_matric_query(value) {
+      $("#matrixok").one("click",function () {
+        info = $("#matrixinfo").val().split(",");
+        if(info.length === 0){
+          row = 1;col = 1;
+        }else if(info.length === 1){
+          row = parseInt(info[0]);
+          col = 1;
+        }else{
+          row = parseInt(info[0]);
+          col = parseInt(info[1]);
+        }
+        console.log(value);
+        value = create_matrix_str(value,col,row,"");
+        console.log(value);
+        on_formulatbt_click(value);
+      });
+      $("#matrixmodel").modal("show");
+    }
+
 
     function on_formulatbt_click(value) {
       var ipt = document.getElementById("input");
@@ -465,7 +819,15 @@
       formular.forEach((value,index)=>{
         var btarea = document.getElementById("btarea");
         if(value["type"]){
-          btarea.appendChild(document.createElement("br"));
+          if(value["type"] === "br"){
+            btarea.appendChild(document.createElement("br"));
+          }else if(value["type"] === "space"){
+            button = document.createElement("button");
+            button.className = "btn btn-default"
+            button.innerText = "";
+            button.style = "visibility: hidden";
+            btarea.appendChild(button);
+          }
           return;
         }
 
@@ -489,6 +851,7 @@
           if(value["childs"]){
             var childs = document.createElement("ul");
             childs.className = "dropdown-menu";
+            // childs.style = "width:50px";
             value["childs"].forEach((value)=>{
               let li = document.createElement("li");
               let a = document.createElement("a");
@@ -525,6 +888,26 @@
           btarea.appendChild(btwrap);
         }
       });
+
+      matrixformular.forEach((value)=>{
+        btwrap = document.createElement("div");
+        btwrap.className = "fbt";
+
+        button = document.createElement("button");
+        button.className = "btn btn-default";
+        button.title = value["begin"]+value["end"];
+        // button.attributes["curser"] = value["curser"];
+
+        content = create_matrix_str(value,3,2,".");
+        button.innerText = `$${content["value"]}$`;
+        button.onclick = function (){
+          show_matric_query(value);
+        };
+
+        btwrap.appendChild(button);
+        btarea.appendChild(btwrap);
+
+      });
     }
 
     $(document).ready(function(){
@@ -543,8 +926,6 @@
           }
         }
       };
-
-
 
       $(".dropdown-toggle").mouseenter(function() {
         $(this).addClass("mousein");
@@ -566,6 +947,8 @@
         $(this).dropdown("toggle");
       });
     });
+
+
 
   </script>
 
@@ -592,6 +975,33 @@
       <div id="history"></div>
     </div>
     <div class="footer">Powered by <a href="https://github.com/sailist">Sailist</a> </div>
+
+
+    <!-- 模态框 -->
+    <div class="modal fade" id="matrixmodel">
+      <div class="modal-dialog">
+        <div class="modal-content">
+
+          <!-- 模态框头部 -->
+          <div class="modal-header">
+            <h4 class="modal-title">矩阵代码生成</h4>
+            <button type="button" class="close" data-dismiss="modal" >&times;</button>
+          </div>
+
+          <!-- 模态框主体 -->
+          <div class="modal-body">
+            请选择生成 几行几列 的矩阵（默认1行1列）
+          </div>
+          <input type="text" id="matrixinfo" class="form-control" value="" style="width: 95%;margin: 0 auto"/>
+          <!-- 模态框底部 -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-warning" data-dismiss="modal">取消</button>
+            <button type="button" id="matrixok" class="btn btn-success" data-dismiss="modal">确定</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
 
 
 </body>
