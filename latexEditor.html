@@ -100,6 +100,13 @@
 
     }
 
+    function copy_ipt() {
+      var elem = document.getElementById("input");
+      elem.select();
+      document.execCommand("Copy");
+
+
+    }
     function add_history() {
       var inputarea = document.getElementById("input");
       let input = inputarea.value;
@@ -567,16 +574,6 @@
       },
       {"type":"br",},
       {
-        "group":true, "title":"积分", "content":"$\\int$", "value":"\\int ", "curser":0,
-        "childs":[
-          { "group":false, "title":"积分+上下标", "content":"$\\int_{b}^{a}$", "value":"\\int_{}^{}", "curser":-4, },
-          { "group":false, "title":"闭曲线积分", "content":"$\\oint$", "value":"\\oint ", "curser":0, },
-          { "group":false, "title":"闭曲线积分+上下标", "content":"$\\oint_{b}^{a}$", "value":"\\oint_{}^{}", "curser":-4, },
-          { "group":false, "title":"二重积分", "content":"$\\iint_{b}^{a}$", "value":"\\iint_{}^{}", "curser":-4, },
-          { "group":false, "title":"三重积分", "content":"$\\iiint_{b}^{a}$", "value":"\\iiint_{}^{}", "curser":-4, },
-        ]
-      },
-      {
         "group":true, "title":"小括号", "content":"$\\left( \\right)$", "value":"\\left(  \\right)", "curser":-8,
         "childs":[
           { "group":false, "title":"大括号", "content":"$\\left\\{ \\right\\}$", "value":"\\left\\{  \\right\\}", "curser":-9, },
@@ -588,6 +585,16 @@
           { "group":false, "title":"左括号", "content":"$\\left( \\right.$", "value":"\\left(  \\right.", "curser":-8, },
           { "group":false, "title":"右括号", "content":"$\\quad\\left. \\right)$", "value":"\\left.  \\right)", "curser":-8, },
         ],
+      },
+      {
+        "group":true, "title":"积分", "content":"$\\int$", "value":"\\int ", "curser":0,
+        "childs":[
+          { "group":false, "title":"积分+上下标", "content":"$\\int_{b}^{a}$", "value":"\\int_{}^{}", "curser":-4, },
+          { "group":false, "title":"闭曲线积分", "content":"$\\oint$", "value":"\\oint ", "curser":0, },
+          { "group":false, "title":"闭曲线积分+上下标", "content":"$\\oint_{b}^{a}$", "value":"\\oint_{}^{}", "curser":-4, },
+          { "group":false, "title":"二重积分", "content":"$\\iint_{b}^{a}$", "value":"\\iint_{}^{}", "curser":-4, },
+          { "group":false, "title":"三重积分", "content":"$\\iiint_{b}^{a}$", "value":"\\iiint_{}^{}", "curser":-4, },
+        ]
       },
       {
         "group":true, "title":"交", "content":"$\\bigcap$", "value":"\\bigcap ", "curser":0,
@@ -984,7 +991,7 @@
 <body>
 
     <div id="frame">
-      <h1>$Live \TeX{}$<small> —— A good Online $\LaTeX{}$ Formula Editor</small></h1>
+      <h1>$\TeX{} Live$<small> —— A Good Online $\LaTeX{}$ Formula Editor</small></h1>
 
       <div id="btarea">
 
@@ -995,6 +1002,7 @@
       <div class="right">
         <input type="button" class="btn btn-default"value="清除历史记录" id="clear" onclick="clear_history()"/>
         <input type="button" class="btn btn-default" value="保存历史" id="save" onclick="add_history()" />
+        <input type="button" class="btn btn-default" value="复制" id="copy_ipt" onclick="copy_ipt()" />
         <p id="warn" style="color: red"></p>
       </div>
       <br clear="all" />
