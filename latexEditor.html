@@ -7,10 +7,27 @@
   <title>Live TeX</title>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script>
+    MathJax = {
+      "HTML-CSS": { linebreaks: { automatic: true } },
+      SVG: { linebreaks: { automatic: true } },
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
+      TeX: { extensions: ["color.js"] },
+      svg: {fontCache: 'global'},
+      startup: {
+        ready: function () {
+          MathJax.startup.defaultReady();
+          // MathJax.texReset();
+          // MathJax.typesetClear();
+          // MathJax.typesetPromise();
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
   <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
   <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-svg.js"></script>
   <style>
     ul{
       min-width: auto !important;
@@ -523,6 +540,31 @@
           {'group': false, 'title': '\\texttt{}', 'content': '$\\texttt{文本印刷体}$', 'value': '\\texttt{}', 'curser': -1} ,
         ]
       },
+      {
+        "group":true,
+        "title":"红色",
+        "content":"${\\color{Red} Red }$",
+        "value":"{\\color{Red}  }",
+        "curser":-2,
+        "childs":[
+          {'group': false, 'title': '{\\color{Magenta} }', 'content': '${\\color{Magenta} Magenta  }$', 'value': '{\\color{Magenta} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{DarkRed} }', 'content': '${\\color{DarkRed} DarkRed  }$', 'value': '{\\color{DarkRed} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Orange} }', 'content': '${\\color{Orange} Orange  }$', 'value': '{\\color{Orange} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{DarkOrange} }', 'content': '${\\color{DarkOrange} DarkOrange  }$', 'value': '{\\color{DarkOrange} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Yellow} }', 'content': '${\\color{Yellow} Yellow  }$', 'value': '{\\color{Yellow} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Green} }', 'content': '${\\color{Green} Green  }$', 'value': '{\\color{Green} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Emerald} }', 'content': '${\\color{Emerald} Emerald  }$', 'value': '{\\color{Emerald} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Teal} }', 'content': '${\\color{Teal} Teal  }$', 'value': '{\\color{Teal} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{DarkGreen} }', 'content': '${\\color{DarkGreen} DarkGreen  }$', 'value': '{\\color{DarkGreen} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Cyan} }', 'content': '${\\color{Cyan} Cyan  }$', 'value': '{\\color{Cyan} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Blue} }', 'content': '${\\color{Blue} Blue  }$', 'value': '{\\color{Blue} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{DarkBlue} }', 'content': '${\\color{DarkBlue} DarkBlue  }$', 'value': '{\\color{DarkBlue} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Purple} }', 'content': '${\\color{Purple} Purple  }$', 'value': '{\\color{Purple} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Orchid} }', 'content': '${\\color{Orchid} Orchid  }$', 'value': '{\\color{Orchid} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Pink} }', 'content': '${\\color{Pink} Pink  }$', 'value': '{\\color{Pink} }', 'curser': -2} ,
+          {'group': false, 'title': '{\\color{Pink} }', 'content': '${\\color{Pink} Pink  }$', 'value': '{\\color{Pink} }', 'curser': -2} ,
+        ]
+      },
       {"type":"br",},
       {
         "group":true, "title":"积分", "content":"$\\int$", "value":"\\int ", "curser":0,
@@ -912,21 +954,6 @@
 
     $(document).ready(function(){
       init_button();
-      MathJax = {
-        "HTML-CSS": { linebreaks: { automatic: true } },
-        SVG: { linebreaks: { automatic: true } },
-        tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
-        svg: {fontCache: 'global'},
-        startup: {
-          ready: function () {
-            MathJax.startup.defaultReady();
-            MathJax.texReset();
-            MathJax.typesetClear();
-            MathJax.typesetPromise();
-          }
-        }
-      };
-
       $(".dropdown-toggle").mouseenter(function() {
         $(this).addClass("mousein");
         if(!$(this).hasClass("open")){
