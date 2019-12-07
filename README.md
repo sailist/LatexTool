@@ -1,5 +1,5 @@
 # LatexTool
-生成表格，绘制公式...等一系列工具（还未更新）
+A series of tools to make it easier to generate table, create formula, insert figure...  
 
 ```bash
 pip install textool
@@ -7,19 +7,20 @@ pip install textool
 
 ## Generate Table Perfectly
 
-use directly in command line
+used directly in command line
 ```bash
 x2t file.xlsx -f -c
 ```
 
-use in python language
+used in python
 ```python
 from LatexTool.ast.tabel import *
 tab = Tabel("filename",fill = True,center=True)
 print(tab.to_tex())
 ```
 
-where fill is strech table to \textwidth, and center is use \centering
+"fill" option is to choose whether strech table to \textwidth, and "center" is to use \centering environment.
+
 
 ## Quick Paste Figure
 
@@ -44,5 +45,12 @@ Then the content of clipboard will be:
 ```
 
 ## LaTeX formula Editor
+Developed by using MathJax. 
 
-[click this link to editor](./latexEditor.html)
+![](./img/lfe.png)
+
+[click this](./latexEditor.html) 
+
+## More
+To be Continued...
+
