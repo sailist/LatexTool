@@ -49,7 +49,7 @@ Developed by using MathJax.
 
 ![](./img/lfe.png)
 
-[click this](./latexEditor.html) 
+[click this](https://sailist.github.io/LatexTool/latexEditor.html) 
 
 ## More
 To be Continued...
