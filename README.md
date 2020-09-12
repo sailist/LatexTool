@@ -45,11 +45,14 @@ Then the content of clipboard will be:
 ```
 
 ## LaTeX formula Editor
+
 Developed by using MathJax. 
 
 ![](./img/lfe.png)
 
 [click this](https://sailist.github.io/LatexTool/latexEditor.html) 
+
+2020.9.13: now [latexlive](https://latexlive.com/) is a better choice.
 
 ## More
 To be Continued...
